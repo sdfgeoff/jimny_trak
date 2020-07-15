@@ -4,5 +4,5 @@ STL_FOLDER = TOP .. '/generated/stl'
 GEN_BLEND_FOLDER = TOP .. '/generated/blends'
 GEN_IMAGE_FOLDER = TOP .. '/generated/images'
 
-PROJECT_NAME = "Traktion_Maschine_3"
+PROJECT_NAME = "Jimny_Trak"
 VERSION = "v0.1"

@@ -1,0 +1,130 @@
+<html>
+<head>
+<title>Control Page</title>
+</head>
+
+<script>
+
+
+all_stats = {}
+
+
+function set_stat(name, value) {
+    
+
+    all_stats[name] = value
+
+    html_str = ""
+    for (stat_name in all_stats) {
+        html_str += stat_name + ": " + all_stats[stat_name]
+        html_str += "</br>\n"
+    }
+
+    document.getElementById("stats").innerHTML = html_str
+}
+
+
+function is_connected(val) {
+    set_stat("Connected", val.toString())
+    
+}
+    
+
+
+function send_control(speed, turn, lights) {
+
+    const request = new XMLHttpRequest();
+    
+    request.open("POST", 'control');
+    request.setRequestHeader('Content-type', 'application/json');
+    request.send(JSON.stringify({'s':speed, 't':turn, 'l':lights}));
+    request.send_time = (new Date()).getTime()
+
+    request.onreadystatechange = function(e) {
+        if (request.readyState == 4) {
+            if (request.status == 200) {
+                duration = (new Date()).getTime() - request.send_time
+
+                data = JSON.parse(request.responseText)
+                is_connected(true)
+                set_stat("Battery", data['b'].toFixed(2) + "V")
+                set_stat("Latency", duration.toString() + "ms")
+                
+            } else {
+                is_connected(false)
+            }
+
+            setTimeout(transmit_control, 100)
+        }
+    }
+
+}
+
+mouse_down = false
+mouse_position = {'x':0, 'y':0}
+
+
+function mouse_move(evt) {
+    canvas = document.getElementById("touchpad")
+    rect = canvas.getBoundingClientRect();
+    mouse_position['x'] = (evt.clientX - rect.left) / rect.width
+    mouse_position['y'] = (evt.clientY - rect.top) / rect.height
+
+    ctx = canvas.getContext('2d');
+    ctx.fillStyle = "#000"
+    ctx.fillRect(0, 0, 512, 512)
+
+    ctx.fillStyle = "#FFF"
+
+    x = mouse_position.x * rect.width
+    y = mouse_position.y * rect.height
+    ctx.fillRect(x-5, y-5, 10, 10)
+    
+    
+}
+
+
+
+function transmit_control() {
+
+    turn = 0
+    speed = 0
+
+    if (mouse_down) {
+        turn = Math.round((mouse_position['x'] - 0.5) * 200)
+        speed = Math.round(-(mouse_position['y'] - 0.5) * 200)
+    }
+
+    console.log(turn, speed)
+    
+    send_control(turn, speed, 0)
+}
+
+
+
+window.onload = function(){
+
+    document.getElementById("touchpad").addEventListener('mousemove', mouse_move)
+    document.getElementById("touchpad").addEventListener('mousedown', function(){mouse_down=true})
+    document.getElementById("touchpad").addEventListener('mouseup', function(){mouse_down=false})
+    document.getElementById("touchpad").addEventListener('mouseout', function(){mouse_down=false})
+    
+    transmit_control()
+}
+
+
+</script>
+
+<body>
+<h1>Tiny Track 86</h1>
+<div id="stats">
+Not Connected
+</div>
+
+
+<div id="control">
+<canvas id="touchpad", width=512px, height=512px></canvas>
+</div>
+
+</body>
+</html>
