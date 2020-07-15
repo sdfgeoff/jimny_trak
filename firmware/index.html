@@ -61,15 +61,12 @@ function send_control(speed, turn, lights) {
 }
 
 mouse_down = false
-mouse_position = {'x':0, 'y':0}
+mouse_position = {'x':0.5, 'y':0.5}
 
 
-function mouse_move(evt) {
+function draw_canvas() {
     canvas = document.getElementById("touchpad")
     rect = canvas.getBoundingClientRect();
-    mouse_position['x'] = (evt.clientX - rect.left) / rect.width
-    mouse_position['y'] = (evt.clientY - rect.top) / rect.height
-
     ctx = canvas.getContext('2d');
     ctx.fillStyle = "#000"
     ctx.fillRect(0, 0, 512, 512)
@@ -79,10 +76,27 @@ function mouse_move(evt) {
     x = mouse_position.x * rect.width
     y = mouse_position.y * rect.height
     ctx.fillRect(x-5, y-5, 10, 10)
-    
-    
 }
 
+
+function mouse_move(evt) {
+    canvas = document.getElementById("touchpad")
+    rect = canvas.getBoundingClientRect();
+    mouse_position['x'] = (evt.clientX - rect.left) / rect.width
+    mouse_position['y'] = (evt.clientY - rect.top) / rect.height
+
+    draw_canvas()
+}
+
+function touch_move(evt) {
+    canvas = document.getElementById("touchpad")
+    rect = canvas.getBoundingClientRect();
+    touch = evt.touches[0]
+    mouse_position['x'] = (touch.clientX - rect.left) / rect.width
+    mouse_position['y'] = (touch.clientY - rect.top) / rect.height
+
+    draw_canvas()
+}
 
 
 function transmit_control() {
@@ -101,14 +115,35 @@ function transmit_control() {
 }
 
 
+function up(evt){
+    evt.preventDefault()
+    mouse_down=false
+
+    mouse_position['x'] = 0.5
+    mouse_position['y'] = 0.5
+    draw_canvas()
+}
+
+
+function down(evt){
+    evt.preventDefault()
+    mouse_down=true
+}
+
 
 window.onload = function(){
-
-    document.getElementById("touchpad").addEventListener('mousemove', mouse_move)
-    document.getElementById("touchpad").addEventListener('mousedown', function(){mouse_down=true})
-    document.getElementById("touchpad").addEventListener('mouseup', function(){mouse_down=false})
-    document.getElementById("touchpad").addEventListener('mouseout', function(){mouse_down=false})
     
+    document.getElementById("touchpad").addEventListener('mousemove', mouse_move)
+    document.getElementById("touchpad").addEventListener('mousedown', down)
+    document.getElementById("touchpad").addEventListener('mouseup', up)
+    document.getElementById("touchpad").addEventListener('mouseout', up)
+    
+    document.getElementById("touchpad").addEventListener('touchstart', down)
+    document.getElementById("touchpad").addEventListener('touchend', up)
+    document.getElementById("touchpad").addEventListener('touchcancel', up)
+    document.getElementById("touchpad").addEventListener('touchmove', touch_move)
+
+    draw_canvas()
     transmit_control()
 }
 

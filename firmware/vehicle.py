@@ -7,12 +7,12 @@ def get_vehicle():
     """ Construction function for the vehicles hardware. Handles mapping pins
     to functionality """
     left_track = MotorChannel(
-        machine.PWM(machine.Pin(12, machine.Pin.OUT)),
-        machine.PWM(machine.Pin(13, machine.Pin.OUT))
+        machine.PWM(machine.Pin(13, machine.Pin.OUT)),
+        machine.PWM(machine.Pin(12, machine.Pin.OUT))
     )
     right_track = MotorChannel(
-        machine.PWM(machine.Pin(14, machine.Pin.OUT)),
-        SoftwarePWM(machine.Pin(16, machine.Pin.OUT))
+        SoftwarePWM(machine.Pin(16, machine.Pin.OUT)),
+        machine.PWM(machine.Pin(14, machine.Pin.OUT))
     )
     lights = machine.Pin(4)
 
@@ -91,8 +91,8 @@ class TrackedVehicle:
 
     def set_speed(self, speed, turn):
         """ Set the speed of the vehicle"""
-        self.left_track.set_speed(clamp(speed + turn, -1, 1))
-        self.right_track.set_speed(clamp(speed - turn, -1, 1))
+        self.left_track.set_speed(clamp(speed - turn, -1, 1))
+        self.right_track.set_speed(clamp(speed + turn, -1, 1))
 
     def set_lights(self, val):
         """ Turns the vehicles lights on or off """
